@@ -19,7 +19,7 @@ export default function Home() {
     <main className="flex min-h-dvh flex-col bg-[#f5f4ef] p-3 text-[#303a32] sm:p-5">
       <header className="mb-4 flex items-center justify-between gap-4 px-1">
         <div>
-          <p className="text-lg font-semibold tracking-[0.2em] text-[#728071]">
+          <p className="text-lg font-semibold tracking-[0.2em] text-mainText">
             WOODWORKER
           </p>
         </div>
