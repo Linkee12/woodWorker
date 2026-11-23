@@ -1,13 +1,14 @@
 import type { Dispatch, SetStateAction } from "react";
-import { createBottomCabinet } from "./models/cabinets/createBottomCabinet";
 import type { PlaneMaterial } from "./models/parts/plane";
 import * as THREE from "three";
 import type { CabinetSample } from "./edit";
+import type { KitchenFormValues } from "./CreateKitchenForm";
 
 type CabinetFormProps = {
   setModels: Dispatch<SetStateAction<THREE.Object3D[]>>;
-  setSelectedId: Dispatch<SetStateAction<string>>;
+  setSelectedIdx: Dispatch<SetStateAction<number | null>>;
   sample: CabinetSample;
+  kitchen: KitchenFormValues | null;
 };
 
 type CabinetFormModel = {
@@ -54,7 +55,7 @@ export function CabinetForm(props: CabinetFormProps) {
       shelf: String(formData.get("shelf") ?? ""),
     };
 
-    const newModel = createBottomCabinet(
+    const newModel = props.sample.create(
       Number(model.width),
       Number(model.height),
       Number(model.depth),
@@ -62,18 +63,25 @@ export function CabinetForm(props: CabinetFormProps) {
       planeMaterial,
     );
 
-    props.setModels((currentModels) => [...currentModels, newModel]);
-    props.setSelectedId("");
+    props.setModels((currentModels) => {
+      newModel.translateZ(50);
+      if (props.kitchen) {
+        newModel.translateX(-2000 - Number(model.width) / 2);
+        newModel.translateY(props.kitchen.length / 2 - Number(model.depth) / 2);
+      }
+      return [...currentModels, newModel];
+    });
+    props.setSelectedIdx(null);
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      {rows.map((row) => (
-        <div className="flex m-1 items-center">
+      {rows.map((row, idx) => (
+        <div key={row.name} className="flex m-1 items-center ">
           <label className="flex flex-1 text-mainText text-xl mr-3">
             <b>{row.name}</b>
           </label>
-          <div className="flex items-center rounded-md border border-mainText focus-within:ring-2 focus-within:ring-mainText">
+          <div className="flex min-w-0 flex-1 items-center rounded-md border border-mainText focus-within:ring-2 focus-within:ring-mainText">
             <input
               className="w-full flex-1 bg-transparent px-3 py-2 outline-none"
               name={row.name}

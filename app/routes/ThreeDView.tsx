@@ -4,8 +4,13 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 type ThreeDViewProps = {
   scene: THREE.Scene<THREE.Object3DEventMap>;
   models: THREE.Object3D[];
+  kitchen: [number, number, number];
 };
-export default function ThreeDView({ scene, models }: ThreeDViewProps) {
+export default function ThreeDView({
+  scene,
+  models,
+  kitchen,
+}: ThreeDViewProps) {
   const modelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     for (const model of models) {
@@ -22,13 +27,10 @@ export default function ThreeDView({ scene, models }: ThreeDViewProps) {
     }
   }, [models, scene]);
   useEffect(() => {
-    let disposed = false;
     let cleanup: (() => void) | undefined;
 
     if (!modelRef.current) return;
     const container = modelRef.current;
-
-    const previousBackground = scene.background;
     scene.background = new THREE.Color("#e9ede7");
 
     const camera = new THREE.PerspectiveCamera(20, 1, 10, 20000);
@@ -60,8 +62,10 @@ export default function ThreeDView({ scene, models }: ThreeDViewProps) {
     }
 
     const center = bounds.getCenter(new THREE.Vector3());
+
+    console.log(kitchen[0], kitchen[1]);
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(4000, 4000),
+      new THREE.PlaneGeometry(kitchen[0], kitchen[1]),
       new THREE.MeshStandardMaterial({ color: "#e0e5dc", roughness: 1 }),
     );
     floor.position.set(center.x, center.y, bounds.min.z - 2);
@@ -157,7 +161,6 @@ export default function ThreeDView({ scene, models }: ThreeDViewProps) {
     };
 
     return () => {
-      disposed = true;
       cleanup?.();
     };
   }, [scene]);

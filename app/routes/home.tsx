@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
+import { CreateKitchenForm, type KitchenFormValues } from "./CreateKitchenForm";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "WoodWorker" }];
 }
 
 export default function Home() {
+  const [showKitchenForm, setShowKitchenForm] = useState(false);
   const navigate = useNavigate();
   const categories = [
     {
@@ -14,6 +17,10 @@ export default function Home() {
       img: "kitchen.png",
     },
   ];
+
+  function setupKitchen(values: KitchenFormValues) {
+    navigate("/edit", { state: values });
+  }
 
   return (
     <main className="flex min-h-dvh flex-col bg-[#f5f4ef] p-3 text-[#303a32] sm:p-5">
@@ -35,23 +42,24 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-[#303a32]">WoodWorker</h1>
 
         <div className="mt-10 rounded-2xl border border-[#e1e3da] bg-[#fcfcf8] p-5 shadow-sm">
-          <div className="flex flex-wrap gap-4">
-            {categories.map((item) => (
-              <div
-                key={item.id}
-                className="flex w-60 cursor-pointer flex-col items-center rounded-xl bg-[#728071] p-3 duration-300 ease-color hover:bg-[#889081]"
-                onClick={() => {
-                  const url = item?.name ? `/edit/${item.name}` : "/edit";
-                  navigate(url);
-                }}
-              >
-                <img src={"/" + item.img} className="rounded-lg" />
-                <h2 className="mt-2 text-amber-50">
-                  <b>Create new kitchen</b>
-                </h2>
-              </div>
-            ))}
-          </div>
+          {showKitchenForm ? (
+            <CreateKitchenForm onSubmit={(values) => setupKitchen(values)} />
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              {categories.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex w-60 cursor-pointer flex-col items-center rounded-xl bg-[#728071] p-3 duration-300 ease-color hover:bg-[#889081]"
+                  onClick={() => setShowKitchenForm(true)}
+                >
+                  <img src={"/" + item.img} className="rounded-lg" />
+                  <h2 className="mt-2 text-amber-50">
+                    <b>Create new kitchen</b>
+                  </h2>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </main>

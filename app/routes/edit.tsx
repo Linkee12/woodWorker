@@ -1,26 +1,28 @@
+import { useLocation } from "react-router";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
-import ThreeDView from "./3dView";
-import { createBaseCabinet } from "./models/cabinets/bottomCabinets/baseCabinet";
+import ThreeDView from "./ThreeDView";
 import { CabinetForm } from "./CabinetForm";
+import { createBottomCabinet } from "./models/cabinets/createBottomCabinet";
+import type { KitchenFormValues } from "./CreateKitchenForm";
 
 export type CabinetSample = {
-  id: string;
   name: string;
   img: string;
-  create: typeof createBaseCabinet;
+  create: typeof createBottomCabinet;
 };
 
 export default function Edit() {
+  const location = useLocation();
+  const kitchen = location.state as KitchenFormValues | null;
   const [models, setModels] = useState<THREE.Object3D[]>([]);
-  const [selectedId, setSelectedId] = useState<string>("");
+  const [selectedId, setSelectedIdx] = useState<number | null>(null);
   const scene = useMemo(() => new THREE.Scene(), []);
   const samples: CabinetSample[] = [
     {
-      id: "bottomCabinetWithShelf",
       name: "Bottom cabinet with shelf",
       img: "bottomCabinetWithShelf.png",
-      create: createBaseCabinet,
+      create: createBottomCabinet,
     },
   ];
 
@@ -32,18 +34,29 @@ export default function Edit() {
             WOODWORKER
           </p>
         </div>
+        {kitchen && (
+          <p className="text-right text-sm text-[#52684f]">
+            Kitchen: {kitchen.width} x {kitchen.length} x {kitchen.height} mm
+            <span className="ml-2">[{kitchen.type}]</span>
+          </p>
+        )}
       </header>
 
       <div className="flex flex-1 flex-col gap-4 md:flex-row">
-        <aside className="rounded-2xl border border-[#e1e3da] bg-[#fcfcf8] p-5 shadow-sm  md:shrink-0">
-          {selectedId !== "" ? (
-            <CabinetForm setModels={setModels} setSelectedId={setSelectedId} sample={samples[selectedId]}/>
+        <aside className="w-full rounded-2xl border border-[#e1e3da] bg-[#fcfcf8] p-5 shadow-sm md:w-70 md:min-w-0 md:shrink-0">
+          {selectedId !== null ? (
+            <CabinetForm
+              setModels={setModels}
+              setSelectedIdx={setSelectedIdx}
+              sample={samples[selectedId]}
+              kitchen={kitchen}
+            />
           ) : (
-            samples.map((sample) => (
+            samples.map((sample, index) => (
               <div
-                key={sample.id}
+                key={index}
                 className="flex flex-col items-center w-60  p-3  bg-[#728071] hover:bg-[#889081] rounded-xl duration-300 ease-color cursor-pointer"
-                onClick={() => setSelectedId(sample.id)}
+                onClick={() => setSelectedIdx(index)}
               >
                 <img src={"/" + sample.img} className="rounded-lg"></img>
                 <h2 className="text-amber-50 mt-2">
@@ -58,7 +71,15 @@ export default function Edit() {
           aria-label="Modell előnézete"
           className="flex flex-1 flex-col  rounded-2xl border border-[#d9dfd4] bg-[#e9ede7] shadow-sm"
         >
-          <ThreeDView scene={scene} models={models} />
+          <ThreeDView
+            scene={scene}
+            models={models}
+            kitchen={[
+              kitchen?.width ?? 0,
+              kitchen?.length ?? 0,
+              kitchen?.height ?? 0,
+            ]}
+          />
         </section>
       </div>
     </main>
